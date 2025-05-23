@@ -33,15 +33,18 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Routes
+import workflowRoutes from './api/workflows/workflowRoutes';
+import agentRoutes from './api/agents/agentRoutes';
+import integrationRoutes from './api/integrations/integrationRoutes';
+app.use('/api/workflows', workflowRoutes);
+app.use('/api/agents', agentRoutes);
+app.use('/api/integrations', integrationRoutes);
 // We'll add these later
-// app.use('/api/workflows', workflowRoutes);
-// app.use('/api/agents', agentRoutes);
-// app.use('/api/integrations', integrationRoutes);
 // app.use('/api/zapier', zapierRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV
