@@ -1,5 +1,5 @@
-import express from 'express';
-import { requireAuth } from '../../middleware/authMiddleware';
+import express, { Request, Response, NextFunction } from 'express';
+import { requireAuth, AuthenticatedRequest } from '../../middleware/authMiddleware';
 import {
   getAgents,
   getAgentById,
@@ -13,15 +13,23 @@ const router = express.Router();
 router.use(requireAuth);
 
 // Get all agents
-router.get('/', getAgents);
+router.get('/', (req: Request, res: Response, next: NextFunction) => {
+  getAgents(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Get agent capabilities
-router.get('/capabilities', getAgentCapabilities);
+router.get('/capabilities', (req: Request, res: Response, next: NextFunction) => {
+  getAgentCapabilities(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Get a specific agent
-router.get('/:id', getAgentById);
+router.get('/:id', (req: Request, res: Response, next: NextFunction) => {
+  getAgentById(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Execute an agent
-router.post('/:id/execute', executeAgent);
+router.post('/:id/execute', (req: Request, res: Response, next: NextFunction) => {
+  executeAgent(req as AuthenticatedRequest, res).catch(next);
+});
 
 export default router;

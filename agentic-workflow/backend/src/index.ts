@@ -43,10 +43,12 @@ import workflowRoutes from './api/workflows/workflowRoutes';
 import agentRoutes from './api/agents/agentRoutes';
 import integrationRoutes from './api/integrations/integrationRoutes';
 import zapierRoutes from './api/zapier/zapierRoutes';
+import authRoutes from './api/auth/authRoutes';
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/zapier', zapierRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -1,5 +1,5 @@
-import express from 'express';
-import { requireAuth } from '../../middleware/authMiddleware';
+import express, { Request, Response, NextFunction } from 'express';
+import { requireAuth, AuthenticatedRequest } from '../../middleware/authMiddleware';
 import {
   getWorkflows,
   getWorkflowById,
@@ -17,27 +17,43 @@ const router = express.Router();
 router.use(requireAuth);
 
 // Get all workflows
-router.get('/', getWorkflows);
+router.get('/', (req: Request, res: Response, next: NextFunction) => {
+  getWorkflows(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Get a specific workflow
-router.get('/:id', getWorkflowById);
+router.get('/:id', (req: Request, res: Response, next: NextFunction) => {
+  getWorkflowById(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Create a new workflow
-router.post('/', createWorkflow);
+router.post('/', (req: Request, res: Response, next: NextFunction) => {
+  createWorkflow(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Update a workflow
-router.put('/:id', updateWorkflow);
+router.put('/:id', (req: Request, res: Response, next: NextFunction) => {
+  updateWorkflow(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Delete a workflow
-router.delete('/:id', deleteWorkflow);
+router.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
+  deleteWorkflow(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Execute a workflow
-router.post('/:id/execute', executeWorkflow);
+router.post('/:id/execute', (req: Request, res: Response, next: NextFunction) => {
+  executeWorkflow(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Get all executions for a workflow
-router.get('/:id/executions', getWorkflowExecutions);
+router.get('/:id/executions', (req: Request, res: Response, next: NextFunction) => {
+  getWorkflowExecutions(req as AuthenticatedRequest, res).catch(next);
+});
 
 // Get a specific execution for a workflow
-router.get('/:id/executions/:executionId', getWorkflowExecution);
+router.get('/:id/executions/:executionId', (req: Request, res: Response, next: NextFunction) => {
+  getWorkflowExecution(req as AuthenticatedRequest, res).catch(next);
+});
 
 export default router;
