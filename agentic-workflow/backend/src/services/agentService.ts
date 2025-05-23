@@ -51,13 +51,13 @@ export const getAgentById = (id: string) => {
 // Get all agent capabilities
 export const getAllAgentCapabilities = () => {
   const capabilities = new Set<string>();
-  
+
   Object.values(AGENT_TYPES).forEach(agent => {
     agent.capabilities.forEach(capability => {
       capabilities.add(capability);
     });
   });
-  
+
   return Array.from(capabilities);
 };
 
@@ -69,24 +69,24 @@ export const executeAgentTask = async (
 ) => {
   try {
     const agent = getAgentById(agentType);
-    
+
     if (!agent) {
       throw new Error(`Agent type '${agentType}' not found`);
     }
-    
+
     // Check if Google AI API key is available
     const apiKey = process.env.GOOGLE_AI_API_KEY;
-    
+
     if (!apiKey) {
       throw new Error('Google AI API key not found in environment variables');
     }
-    
+
     // Prepare the prompt based on agent type and task
     const prompt = prepareAgentPrompt(agent, task, context);
-    
+
     // Call Google AI API (Gemini)
     const response = await callGeminiAPI(prompt, apiKey);
-    
+
     return {
       result: response,
       metadata: {
@@ -109,15 +109,15 @@ const prepareAgentPrompt = (
 ) => {
   // Base prompt with agent identity
   let prompt = `You are a ${agent.name}. ${agent.description}\n\n`;
-  
+
   // Add task description
   prompt += `Task: ${task}\n\n`;
-  
+
   // Add context if available
   if (Object.keys(context).length > 0) {
     prompt += `Context:\n${JSON.stringify(context, null, 2)}\n\n`;
   }
-  
+
   // Add specific instructions based on agent type
   switch (agent.id) {
     case AGENT_TYPES.RESEARCH.id:
@@ -138,42 +138,48 @@ const prepareAgentPrompt = (
     default:
       prompt += 'Please complete this task to the best of your abilities.';
   }
-  
+
   return prompt;
 };
 
 // Call the Google Gemini API
 const callGeminiAPI = async (prompt: string, apiKey: string) => {
   try {
-    // For now, we'll return a mock response
-    // In a real implementation, this would call the Google Gemini API
-    
-    // Mock implementation
-    return `This is a mock response for the prompt: "${prompt.substring(0, 50)}..."`;
-    
-    // Real implementation would look something like this:
-    /*
+    // Real implementation calling the Google Gemini API
     const response = await axios.post(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 1024,
+          topP: 0.95,
+          topK: 40,
         },
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
         },
       }
     );
-    
-    return response.data.candidates[0].content.parts[0].text;
-    */
+
+    // Check if we have a valid response
+    if (response.data &&
+        response.data.candidates &&
+        response.data.candidates.length > 0 &&
+        response.data.candidates[0].content &&
+        response.data.candidates[0].content.parts &&
+        response.data.candidates[0].content.parts.length > 0) {
+      return response.data.candidates[0].content.parts[0].text;
+    } else {
+      console.error('Unexpected Gemini API response structure:', response.data);
+      return `I couldn't generate a proper response. Please try again.`;
+    }
   } catch (error) {
     console.error('Error calling Gemini API:', error);
-    throw new Error('Failed to generate response from AI model');
+
+    // Fallback to mock response in case of error
+    return `I'm sorry, I couldn't process your request due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`;
   }
 };

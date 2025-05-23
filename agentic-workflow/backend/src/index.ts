@@ -6,9 +6,15 @@ import dotenv from 'dotenv';
 import { rateLimit } from 'express-rate-limit';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
+import { initializeDatabase } from './config/db-init';
 
 // Load environment variables
 dotenv.config();
+
+// Initialize database
+initializeDatabase().catch(error => {
+  console.error('Failed to initialize database:', error);
+});
 
 // Create Express app
 const app = express();
@@ -36,11 +42,11 @@ app.use(limiter);
 import workflowRoutes from './api/workflows/workflowRoutes';
 import agentRoutes from './api/agents/agentRoutes';
 import integrationRoutes from './api/integrations/integrationRoutes';
+import zapierRoutes from './api/zapier/zapierRoutes';
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/integrations', integrationRoutes);
-// We'll add these later
-// app.use('/api/zapier', zapierRoutes);
+app.use('/api/zapier', zapierRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -48,6 +54,15 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV
+  });
+});
+
+// Keep-alive endpoint for Render
+app.get('/api/keep-alive', (req, res) => {
+  res.status(200).json({
+    status: 'alive',
+    timestamp: new Date().toISOString(),
+    message: 'Service is active'
   });
 });
 
